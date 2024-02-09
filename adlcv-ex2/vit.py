@@ -55,7 +55,7 @@ class Attention(nn.Module):
         assert attention.size() == (batch_size*self.num_heads, seq_len, seq_len)
         assert out.size() == (batch_size, seq_len, embed_dim)
 
-        return self.o_projection(out)
+        return self.o_projection(out), attention
 
 class EncoderBlock(nn.Module):
     def __init__(self, embed_dim, num_heads, fc_dim=None, dropout=0.0):
@@ -76,13 +76,13 @@ class EncoderBlock(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
-        attention_out = self.attention(x)
+        attention_out, attention_weights = self.attention(x)
         x = self.layernorm1(attention_out + x)
         x = self.dropout(x)
         fc_out = self.fc(x)
         x = self.layernorm2(fc_out + x)
         x = self.dropout(x)
-        return x
+        return x, attention_weights
 
 class ViT(nn.Module):
     def __init__(self, image_size, channels, patch_size, embed_dim, num_heads, num_layers,
@@ -142,7 +142,7 @@ class ViT(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
 
-    def forward(self, img):
+    def forward(self, img, return_attention=False):
 
         tokens = self.to_patch_embedding(img)
         batch_size, num_patches, embed_dim = tokens.size()
@@ -158,8 +158,12 @@ class ViT(nn.Module):
         x = tokens + positions
         
         x = self.dropout(x)
-        x = self.transformer_blocks(x)
-        
+        attention_weights_list = []
+        for block in self.transformer_blocks:
+            x, attention_weights = block(x)
+            attention_weights_list.append(attention_weights)
+
+
         if self.pool =='max':
             x = x.max(dim=1)[0]
         elif self.pool =='mean':
@@ -167,4 +171,7 @@ class ViT(nn.Module):
         elif self.pool == 'cls':
             x = x[:, 0]
 
-        return self.classifier(x)
+        if return_attention:
+            return self.classifier(x), attention_weights_list
+        else:
+            return self.classifier(x)

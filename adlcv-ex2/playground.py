@@ -5,6 +5,8 @@ import seaborn as sns
 import torch
 import torchvision
 import torchvision.transforms as transforms
+from PIL import Image
+
 
 from imageclassification import prepare_dataloaders, set_seed
 from vit import ViT, positional_encoding_2d
