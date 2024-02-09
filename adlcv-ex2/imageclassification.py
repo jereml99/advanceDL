@@ -31,11 +31,11 @@ def select_two_classes_from_cifar10(dataset, classes):
 def prepare_dataloaders(batch_size, classes=[3, 7]):
     # TASK: Experiment with data augmentation
     train_transform = transforms.Compose([transforms.ToTensor(),
-                                   transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+                                   transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261))]
     )
 
     test_transform = transforms.Compose([transforms.ToTensor(),
-                                   transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+                                   transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261))]
     )
 
     trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
