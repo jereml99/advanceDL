@@ -72,7 +72,7 @@ if __name__ == "__main__":
     plt.title("Image examples from CIFAR10 dataset")
     plt.imshow(img_grid)
     plt.axis('off')
-    plt.show()
+    plt.savefig('figures/cifar10_examples.png')
 
     # convert images to patches
     print(f'shape of input images (batch):  {example_images.shape}')
@@ -90,7 +90,7 @@ if __name__ == "__main__":
         img_grid = img_grid.permute(1, 2, 0)
         ax[i].imshow(img_grid)
         ax[i].axis('off')
-    plt.show()
+    plt.savefig('figures/cifar10_patches.png')
 
     # test input patches before linear embedding layer
     img_patches = image_to_patches(example_images, patch_size=(4,4), image_grid=False)
@@ -110,4 +110,4 @@ if __name__ == "__main__":
     plt.xlabel('Dimension')
     plt.ylabel('Position in the sequence')
     plt.gca().invert_yaxis()
-    plt.show()
+    plt.savefig('figures/positional_encoding_2d.png')
