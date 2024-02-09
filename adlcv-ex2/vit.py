@@ -115,11 +115,12 @@ class ViT(nn.Module):
         #       2) Stack Rearrange layer with a linear projection layer using nn.Sequential
         #          Consider including LayerNorm layers before and after the linear projection
         ######## insert code here ########
-        #
-        #
-        #
-        #
-        #
+        self.to_patch_embedding = nn.Sequential(
+            Rearrange('b c (num_patches_h patch_h) (num_patches_w patch_w) -> b (num_patches_h num_patches_w) (c patch_h patch_w)', patch_w=patch_w, patch_h=patch_h),
+            nn.LayerNorm(patch_dim),
+            nn.Linear(patch_dim, embed_dim),
+            nn.LayerNorm(embed_dim)
+        )
         #################################
 
         if self.pos_enc == 'learnable':
