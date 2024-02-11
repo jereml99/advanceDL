@@ -125,11 +125,44 @@ def main(image_size=(32,32), patch_size=(4,4), channels=3,
             if val_loss <= best_val_loss:
                 torch.save(model.state_dict(), 'model.pth')
                 best_val_loss = val_loss
-
+    return acc
 
 if __name__ == "__main__":
     #os.environ["CUDA_VISIBLE_DEVICES"]= str(0)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  
     print(f"Model will run on {device}")
     set_seed(seed=1)
-    main()
+    
+    list_pathsizes=[(4,4), (8,8), (16,16)]
+    list_embed_dim=[64, 128, 256]
+    list_num_heads=[8, 16, 32]
+    list_num_layers=[2, 4, 8]
+    list_pos_enc=['fixed', 'learnable']
+    
+    # Define the list of parameters and their corresponding values
+    params = {
+        'patch_size': list_pathsizes,
+        'embed_dim': list_embed_dim,
+        'num_heads': list_num_heads,
+        'num_layers': list_num_layers,
+        'pos_enc': list_pos_enc
+    }
+
+    # Initialize the best parameter values
+    best_params = {}
+
+    # Iterate over the parameters and find the best values
+    for param_name, param_values in params.items():
+        param_accs = []
+        for param_value in param_values:
+            param_dict = {param_name: param_value, 'num_epochs': 10}
+            param_accs.append(main(**param_dict))
+        best_param_value = param_values[np.argmax(param_accs)]
+        best_params[param_name] = best_param_value
+
+    # Print the best parameter values
+    for param_name, param_value in best_params.items():
+        print(f"Found best {param_name}: {param_value}")
+
+    # Call the main function with the best parameter values
+    main(**best_params)
