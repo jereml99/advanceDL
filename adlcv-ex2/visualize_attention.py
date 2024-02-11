@@ -95,8 +95,7 @@ transform = transforms.Compose([
     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261))
 ])
 dataset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
-img, label = dataset[4]  # Get the first image and label from the dataset
-
+img, label = dataset[4] 
 # Convert image to batch format (B, C, H, W)
 img_batch = img.unsqueeze(0)
 
