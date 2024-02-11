@@ -70,32 +70,30 @@ def load_trained_model(model_path, model_config):
     model.eval()
     return model
 
-# Model configuration must match the trained model's configuration
-model_config = {
-    'image_size': (32, 32),
-    'channels': 3,
-    'patch_size': (4, 4),
-    'embed_dim': 128,
-    'num_heads': 4,
-    'num_layers': 4,
-    'pos_enc': 'learnable',
-    'pool': 'cls',
-    'dropout': 0.3,
-    'fc_dim': None,
-    'num_classes': 2,
-}
 
+# Example usage
+if __name__ == "__main__":
+    set_seed(seed=42)  # For reproducibility
+    model_config = {
+        'image_size': (32, 32),
+        'channels': 3,
+        'patch_size': (8, 8),
+        'embed_dim': 256,
+        'num_heads': 16,
+        'num_layers': 8,
+        'pos_enc': 'fixed',
+        'pool': 'cls',
+        'dropout': 0.3,
+        'fc_dim': None,
+        'num_classes': 2,
+    }
+    
 # Load the trained model
 model_path = 'model.pth'
 model = load_trained_model(model_path, model_config)
 
-# Prepare an example image from CIFAR-10
-transform = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261))
-])
-dataset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
-img, label = dataset[4] 
+_,_,_, dataset = prepare_dataloaders(batch_size=1, classes=[3, 7])
+img, label = dataset[1] 
 # Convert image to batch format (B, C, H, W)
 img_batch = img.unsqueeze(0)
 
@@ -107,8 +105,10 @@ with torch.no_grad():
 # Select the layer and head to visualize
 layer = 0
 head = 0
-attention_weights_to_visualize = attention_weights[layer][head]
+attention_weights_to_visualize = attention_weights
+
+attention_weights_to_visualize = torch.stack(attention_weights_to_visualize)
 
 # Visualize the attention map
 # Assuming the visualize_attention function is defined as in your snippet
-visualize_attention(img, attention_weights_to_visualize.squeeze(0), patch_size=(4, 4), image_size=(32, 32))
+visualize_attention(img, attention_weights_to_visualize.mean(dim=(0,1)), patch_size=(4, 4), image_size=(32, 32))
