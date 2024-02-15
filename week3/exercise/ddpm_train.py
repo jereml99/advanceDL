@@ -16,7 +16,7 @@ from ddpm import Diffusion
 from model import UNet
 
 SEED = 1
-DATASET_SIZE = 40000
+DATASET_SIZE = None
 
 def set_seed(seed=SEED):
     random.seed(seed)
