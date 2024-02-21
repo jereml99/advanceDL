@@ -32,8 +32,8 @@ def save_images(images, path, show=True, title=None, nrow=10):
     plt.axis('off')
     if path is not None:
         plt.savefig(path, bbox_inches='tight', pad_inches=0)
-    if show:
-        plt.show()
+    # if show:
+    #     plt.show()
     plt.close()
 
 
