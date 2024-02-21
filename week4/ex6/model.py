@@ -224,7 +224,6 @@ class Classifier(nn.Module):
         self.encoder = UNetEncoder(img_size, c_in, time_dim, device, channels)
         self.classifier = nn.Sequential(
             nn.Linear(channels*4, labels),
-            nn.Softmax()
         )
 
     def forward(self, x, t):
