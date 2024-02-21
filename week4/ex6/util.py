@@ -62,4 +62,4 @@ def show(imgs, title=None, fig_titles=None, save_path=None):
     if save_path is not None:
         plt.savefig(save_path, bbox_inches='tight', pad_inches=0)
 
-    plt.show()
+    # plt.show()
