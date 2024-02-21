@@ -14,6 +14,7 @@ from ddpm import Diffusion
 from model import Classifier, UNet
 from dataset.helpers import *
 from util import set_seed, prepare_dataloaders
+from scipy.linalg import sqrtm
 set_seed()
 
 class VGG(nn.Module):
@@ -52,10 +53,68 @@ def frechet_distance(mu1, sigma1, mu2, sigma2):
     # https://en.wikipedia.org/wiki/Fr%C3%A9chet_distance
     # HINT: https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.sqrtm.html
     # Implement FID score
+    mean_diff_sq = np.linalg.norm(mu1 - mu2, 2)
+    
+    # Compute sqrt of sigma1*sigma2
+    covmean = sqrtm(sigma1.dot(sigma2))
 
-    fid = ...
+    # Ensure the result is real (to avoid complex numbers due to numerical issues)
+    if np.iscomplexobj(covmean):
+        covmean = covmean.real
 
+    # Compute the Fréchet distance
+    fid = mean_diff_sq + np.trace(sigma1 + sigma2 - 2*covmean)
     return fid
+
+
+def add_random_noise(images, noise_factor=0.1):
+    """
+    Adds random noise to the images.
+    :param images: Torch tensor of images.
+    :param noise_factor: Float indicating the noise factor to be applied.
+    :return: Noisy images.
+    """
+    if noise_factor == 0:
+        return images
+    noise = noise_factor * torch.randn_like(images)
+    noisy_images = images + noise
+    # Clipping the noisy images to maintain the original image distribution range
+    noisy_images = torch.clamp(noisy_images, 0, 1)
+    return noisy_images
+
+def test_fid_with_noise(test_loader, model, device, noise_factor=0.1):
+    """
+    Test FID score on the same picture and a picture with random noise.
+    :param test_loader: DataLoader for test dataset.
+    :param model: Pre-trained VGG model for feature extraction.
+    :param device: Torch device (CPU or CUDA).
+    :param noise_factor: Noise factor for generating noisy images.
+    """
+    original_feat = []
+    noisy_feat = []
+
+    for images, _ in tqdm(test_loader):
+        images = images.to(device)
+        noisy_images = add_random_noise(images, noise_factor=noise_factor)
+        # Extract features from original and noisy images
+        original_features = get_features(model, images)
+        noisy_features = get_features(model, noisy_images)
+
+        original_feat.append(original_features)
+        noisy_feat.append(noisy_features)
+
+    # Concatenate all features from batches
+    original_feat = np.concatenate(original_feat, axis=0)
+    noisy_feat = np.concatenate(noisy_feat, axis=0)
+
+    # Calculate feature statistics
+    mu_original, sigma_original = feature_statistics(original_feat)
+    mu_noisy, sigma_noisy = feature_statistics(noisy_feat)
+
+    # Compute FID score between original and noisy images
+    fid_score = frechet_distance(mu_original, sigma_original, mu_noisy, sigma_noisy)
+    print(f'FID score between original and noisy images: {fid_score:.3f} (with noise factor: {noise_factor})')
+
 
 if __name__ == '__main__':
     set_seed()
@@ -101,6 +160,9 @@ if __name__ == '__main__':
     generated_feat_cFg = np.empty((len(test_loader.dataset), dims))
 
     start_idx = 0
+    
+    test_fid_with_noise(test_loader, model, device, noise_factor=0.)
+    test_fid_with_noise(test_loader, model, device, noise_factor=1)
 
     for images, _ in tqdm(test_loader):
 
