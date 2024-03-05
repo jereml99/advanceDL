@@ -47,6 +47,7 @@ if __name__ == '__main__':
     
     # Define class combinations (e.g., [1, 1, 0, 0, 0] for classes 0 and 1)
     class_combinations = [[1, 0, 0, 0, 0], [1, 1, 0, 0, 0], [1,0,1,0,0], [1,0,0,1,0], [1,0,0,0,1]]  # Modify as needed
+    # class_combinations = class_combinations + [[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0,0,1,0,0], [0,0,0,1,0], [0,0,0,0,1]]  # Modify as needed
     
     # Sample images
     imgs = sample_images_with_classes(ddpm_cFg, unet_ddpm_cFg, len(class_combinations), class_combinations, device)
